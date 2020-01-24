@@ -40,6 +40,11 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries'
     ],
     install_requires=['graphql-core-next'],
-    tests_requires=['pytest'],
     python_requires=">=3.6,<4",
+    extras_require={
+        'dev': [
+            'pytest',
+            'flake8'
+        ]
+    }
 )
