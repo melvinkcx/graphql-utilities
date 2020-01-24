@@ -17,11 +17,11 @@ def get_long_description():
 
 
 setuptools.setup(
-    name="graphql-utils-next",
+    name="graphql-utils",
     version=get_version(),
     author="Melvin Koh",
     author_email="melvinkcx@gmail.com",
-    description="Collection of utils, middlewares, decorators for GraphQL-core-next",
+    description="Collection of utils, middleware, decorators for graphql-core>=3.0",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/melvinkcx/graphql-utils-next",
@@ -39,7 +39,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries'
     ],
-    install_requires=['graphql-core-next'],
+    install_requires=['graphql-core>=3.0'],
     python_requires=">=3.6,<4",
     extras_require={
         'dev': [
