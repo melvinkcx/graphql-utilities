@@ -1,6 +1,3 @@
-from typing import NamedTuple
-
-
 def run_only_once(resolve_func):
     """
     Make sure middleware is run only once,
@@ -11,7 +8,6 @@ def run_only_once(resolve_func):
             @run_only_once
             def resolve(self, next, root, info, *args, **kwargs):
                 pass
-    
     """
     from functools import wraps
 
