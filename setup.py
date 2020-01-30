@@ -43,8 +43,9 @@ setuptools.setup(
     python_requires=">=3.6,<4",
     extras_require={
         'dev': [
-            'pytest',
-            'flake8'
+            'pytest>=5.3.4,<6',
+            'flake8>=3.7.9,<4',
+            'pytest-describe>=0.12,<1'
         ]
     }
 )
