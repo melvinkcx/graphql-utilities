@@ -1,6 +1,6 @@
 from graphql import execute, parse
 
-from graphql_utils.execution import ExtendedExecutionContext
+from graphql_utilities.execution import ExtendedExecutionContext
 from tests.helpers import assert_no_errors, assert_has_errors, assert_has_exactly_n_errors, assert_has_error_message
 from tests.schema import schema
 

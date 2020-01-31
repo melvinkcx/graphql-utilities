@@ -2,7 +2,7 @@ from typing import List, Any
 
 from graphql import execute, parse
 
-from graphql_utils.decorators import run_only_once
+from graphql_utilities.decorators import run_only_once
 from tests.helpers import assert_no_errors
 from tests.schema import schema
 

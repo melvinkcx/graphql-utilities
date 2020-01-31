@@ -3,7 +3,7 @@ from typing import Any, Dict, Union, List, Optional
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
     GraphQLFieldResolver, GraphQLTypeResolver, Middleware, ValidationContext, TypeInfo, visit
 
-from graphql_utils.visitor import DepthAnalysisVisitor
+from graphql_utilities.visitor import DepthAnalysisVisitor
 
 ContextValue = Optional[Dict[str, Any]]
 

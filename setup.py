@@ -4,7 +4,7 @@ import setuptools
 
 
 def get_version():
-    package_init = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'graphql_utils', '__init__.py')
+    package_init = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'graphql_utilities', '__init__.py')
     with open(package_init) as f:
         for line in f:
             if line.startswith('__version__ ='):
@@ -17,14 +17,14 @@ def get_long_description():
 
 
 setuptools.setup(
-    name="graphql-utils",
+    name="graphql-utilities",
     version=get_version(),
     author="Melvin Koh",
     author_email="melvinkcx@gmail.com",
-    description="Collection of utils, middleware, decorators for graphql-core>=3.0",
+    description="Collection of utilities, middleware, decorators for graphql-core>=3.0",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/melvinkcx/graphql-utils-next",
+    url="https://github.com/melvinkcx/graphql-utilities",
     packages=setuptools.find_packages(exclude=["tests.*"]),
     classifiers=[
         'Development Status :: 3 - Alpha',
