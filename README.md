@@ -69,3 +69,7 @@ In recent projects, I ran into some problems with `graphene` and `graphql-core` 
 ## Contributing
 
 Any form of contribution, feature requests, bug reports, pull requests are largely welcome.  
+
+## Licenses
+
+MIT Licensed. GraphQL logo is licensed under Facebook [BSD](http://opensource.org/licenses/bsd-license.php).
