@@ -1,4 +1,4 @@
-from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString, GraphQLInt
+from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString, GraphQLInt, build_schema
 
 schema = GraphQLSchema(
     query=GraphQLObjectType(
@@ -34,3 +34,40 @@ schema = GraphQLSchema(
                 resolve=lambda obj, info: {"meow": "woem"}
             )
         }))
+
+post_schema = build_schema("""
+    directive @cost(
+        complexity: String
+    ) on FIELD_DEFINITION 
+
+    type Author {
+        uid: String!
+        name: String
+        email: String
+    }
+    
+    interface TimestampedType {
+        createdAt: String
+        updatedAt: String
+    }
+    
+    type Post implements TimestampedType {
+        author: Author
+        postId: String!
+        title: String
+        text: String
+        publishedAt: String
+        isPublic: Boolean
+        createdAt: String
+        updatedAt: String
+    }
+    
+    input PostInput {
+        isPublic: Boolean = true
+        isPublished: Boolean = true
+    }
+    
+    type Query {
+        posts(input: PostInput): [Post]
+    }
+""")

@@ -3,17 +3,9 @@ from typing import Any, Dict, Union, List, Optional
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
     GraphQLFieldResolver, GraphQLTypeResolver, Middleware, ValidationContext, TypeInfo, visit
 
-from graphql_utilities.visitor import DepthAnalysisVisitor
+from graphql_utilities.validate import validate_depth
 
 ContextValue = Optional[Dict[str, Any]]
-
-
-class ValidationAbortedError(RuntimeError):
-    """
-    Taken from: graphql-core-next/graphql.validation.validate
-    Error when a validation has been aborted (error limit reached).
-    """
-    pass
 
 
 class ExtendedExecutionContext(ExecutionContext):
@@ -31,21 +23,7 @@ class ExtendedExecutionContext(ExecutionContext):
             middleware: Middleware = None,
     ) -> Union[List[GraphQLError], ExecutionContext]:
         # Build execution context after visiting it
-        errors: List[GraphQLError] = []
-
-        def on_error(error: GraphQLError) -> None:
-            errors.append(error)
-            raise ValidationAbortedError
-
-        depth_analysis = context_value.get("depth_analysis")
-        if depth_analysis:
-            max_depth = depth_analysis.get("max_depth", 10)
-            context = ValidationContext(schema=schema, ast=document, type_info=TypeInfo(schema), on_error=on_error)
-
-            try:
-                visit(document, DepthAnalysisVisitor(context=context, max_depth=max_depth))
-            except ValidationAbortedError:
-                pass
+        errors = validate_depth(schema=schema, document=document, context_value=context_value)
 
         if errors:
             return errors
