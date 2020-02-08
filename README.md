@@ -47,7 +47,7 @@ from graphql_utilities.execution import ExtendedExecutionContext
 
 
 query = '{ field_1_str field_2_int field_3_obj { field_3_obj_sub_1 { xxx } } }'
-execute(schema=schema, document=parse(query),
+graphql_sync(schema=schema, source=query,
                context_value={"depth_analysis": {
                    "max_depth": 2   # Maximum depth allowed
                }},
