@@ -1,4 +1,5 @@
-from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString, GraphQLInt, build_schema
+from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString, GraphQLInt
+from graphql_utilities import build_schema_with_cost
 
 schema = GraphQLSchema(
     query=GraphQLObjectType(
@@ -35,14 +36,10 @@ schema = GraphQLSchema(
             )
         }))
 
-post_schema = build_schema("""
-    directive @cost(
-        complexity: String
-    ) on FIELD_DEFINITION 
-
+post_schema = build_schema_with_cost("""
     type Author {
         uid: String!
-        name: String
+        name: String @cost(complexity: 1)
         email: String
     }
     

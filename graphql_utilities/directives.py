@@ -25,3 +25,14 @@ Ref:
 - https://github.com/graphql-python/graphql-core-next/issues/65
 - http://spec.graphql.org/June2018/#sec-Type-System.Directives
 """
+from graphql import build_schema
+
+cost_directive_source_doc = """
+    directive @cost(
+        complexity: String
+    ) on FIELD_DEFINITION  
+"""
+
+schema_with_cost_directive = build_schema(source=cost_directive_source_doc, no_location=True)
+
+GraphQLCostDirective = schema_with_cost_directive.get_directive("cost")
