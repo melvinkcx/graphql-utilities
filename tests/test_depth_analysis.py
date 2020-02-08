@@ -1,4 +1,4 @@
-from graphql import execute, parse
+from graphql import execute, parse, graphql_sync
 
 from graphql_utilities.execution import ExtendedExecutionContext
 from tests.helpers import assert_no_errors, assert_has_errors, assert_has_exactly_n_errors, assert_has_error_message
@@ -8,11 +8,11 @@ from tests.schema import schema
 def describe_depth_analysis():
     def _execute_query(max_depth: int):
         query = '{ field_1_str field_2_int field_3_obj { field_3_obj_sub_1 { xxx } } }'
-        return execute(schema=schema, document=parse(query),
-                       context_value={"depth_analysis": {
-                           "max_depth": max_depth
-                       }},
-                       execution_context_class=ExtendedExecutionContext)
+        return graphql_sync(schema=schema, source=query,
+                            context_value={"depth_analysis": {
+                                "max_depth": max_depth
+                            }},
+                            execution_context_class=ExtendedExecutionContext)
 
     def test_query_less_than_max_depth_allowed():
         result = _execute_query(10)

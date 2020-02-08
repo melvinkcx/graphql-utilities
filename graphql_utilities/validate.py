@@ -1,6 +1,6 @@
 from typing import List, Any
 
-from graphql import GraphQLError, GraphQLSchema, DocumentNode, ValidationContext, visit
+from graphql import GraphQLError, GraphQLSchema, DocumentNode, ValidationContext, visit, TypeInfo
 
 from graphql_utilities.visitor import DepthAnalysisVisitor
 
@@ -36,3 +36,12 @@ def validate_depth(
             pass
 
     return errors
+
+
+def validate_cost(
+        schema: GraphQLSchema,
+        document: DocumentNode,
+        context_value: Any = None,
+) -> List[GraphQLError]:
+    # TODO
+    return []

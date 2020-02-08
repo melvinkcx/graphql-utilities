@@ -3,7 +3,7 @@ from typing import Any, Dict, Union, List, Optional
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
     GraphQLFieldResolver, GraphQLTypeResolver, Middleware, ValidationContext, TypeInfo, visit
 
-from graphql_utilities.validate import validate_depth
+from graphql_utilities.validate import validate_depth, validate_cost
 
 ContextValue = Optional[Dict[str, Any]]
 
@@ -22,8 +22,12 @@ class ExtendedExecutionContext(ExecutionContext):
             type_resolver: GraphQLTypeResolver = None,
             middleware: Middleware = None,
     ) -> Union[List[GraphQLError], ExecutionContext]:
-        # Build execution context after visiting it
+        # As suggested, graphql_sync, graphql_impl, or graphql should be invoked to execute queries.
+        # By invoking them, schema and documents will have already been validated before the execution
+        # context is being created
+
         errors = validate_depth(schema=schema, document=document, context_value=context_value)
+        errors += validate_cost(schema=schema, document=document, context_value=context_value)
 
         if errors:
             return errors
