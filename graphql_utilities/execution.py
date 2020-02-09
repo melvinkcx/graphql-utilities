@@ -25,9 +25,11 @@ class ExtendedExecutionContext(ExecutionContext):
         # As suggested, graphql_sync, graphql_impl, or graphql should be invoked to execute queries.
         # By invoking them, schema and documents will have already been validated before the execution
         # context is being created
+        errors: List[GraphQLError] = []
 
-        errors = validate_depth(schema=schema, document=document, context_value=context_value)
-        errors += validate_cost(schema=schema, document=document, context_value=context_value)
+        if context_value and isinstance(context_value, dict):
+            validate_depth(schema=schema, document=document, context_value=context_value, errors=errors)
+            validate_cost(schema=schema, document=document, context_value=context_value, errors=errors)
 
         if errors:
             return errors

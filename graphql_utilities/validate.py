@@ -2,7 +2,7 @@ from typing import List, Any
 
 from graphql import GraphQLError, GraphQLSchema, DocumentNode, ValidationContext, visit, TypeInfo
 
-from graphql_utilities.visitor import DepthAnalysisVisitor
+from graphql_utilities.visitor import DepthAnalysisVisitor, CostAnalysisVisitor
 
 
 class ValidationAbortedError(RuntimeError):
@@ -16,10 +16,9 @@ class ValidationAbortedError(RuntimeError):
 def validate_depth(
         schema: GraphQLSchema,
         document: DocumentNode,
-        context_value: Any = None,
-) -> List[GraphQLError]:
-    errors: List[GraphQLError] = []
-
+        context_value: Any,
+        errors: List[GraphQLError]
+):
     def on_error(error: GraphQLError) -> None:
         errors.append(error)
         raise ValidationAbortedError
@@ -35,13 +34,26 @@ def validate_depth(
         except ValidationAbortedError:
             pass
 
-    return errors
-
 
 def validate_cost(
         schema: GraphQLSchema,
         document: DocumentNode,
-        context_value: Any = None,
-) -> List[GraphQLError]:
-    # TODO
+        context_value: Any,
+        errors: List[GraphQLError]
+):
+    def on_error(error: GraphQLError) -> None:
+        errors.append(error)
+        raise ValidationAbortedError
+
+    cost_analysis = context_value.get("cost_analysis")
+
+    if cost_analysis:
+        max_complexity = cost_analysis.get("max_complexity", 500)
+        context = ValidationContext(schema=schema, ast=document, type_info=TypeInfo(schema), on_error=on_error)
+
+        try:
+            visit(document, CostAnalysisVisitor(context=context, max_complexity=max_complexity))
+        except ValidationAbortedError:
+            pass
+
     return []

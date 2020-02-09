@@ -38,7 +38,7 @@ schema = GraphQLSchema(
         }))
 
 post_schema = build_schema_with_cost("""
-    type Author {
+    type Author @cost(complexity: 4) {
         uid: String!
         name: String @cost(complexity: 1)
         email: String
@@ -51,10 +51,10 @@ post_schema = build_schema_with_cost("""
     
     type Post implements TimestampedType {
         author: Author
-        postId: String!
-        title: String
-        text: String
-        publishedAt: String
+        postId: String! @cost(complexity: 5)
+        title: String @cost(complexity: 2)
+        text: String @cost(complexity: 1)
+        publishedAt: String 
         isPublic: Boolean
         createdAt: String
         updatedAt: String
@@ -66,6 +66,7 @@ post_schema = build_schema_with_cost("""
     }
     
     type Query {
-        posts(pagination: PaginationInput): [Post]
+        posts(pagination: PaginationInput): [Post]  @cost(complexity: 2, multipliers: ["pagination.limit"])
+        post(id: ID!): Post
     }
 """)
