@@ -29,7 +29,9 @@ from graphql import build_schema
 
 cost_directive_source_doc = """
     directive @cost(
-        complexity: String
+        complexity: Int
+        multipliers: [String]
+        useMultiplier: Boolean = true
     ) on FIELD_DEFINITION  
 """
 

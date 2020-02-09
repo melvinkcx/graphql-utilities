@@ -1,4 +1,5 @@
 from graphql import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString, GraphQLInt
+
 from graphql_utilities import build_schema_with_cost
 
 schema = GraphQLSchema(
@@ -59,12 +60,12 @@ post_schema = build_schema_with_cost("""
         updatedAt: String
     }
     
-    input PostInput {
-        isPublic: Boolean = true
-        isPublished: Boolean = true
+    input PaginationInput {
+        first: Int
+        last: Int
     }
     
     type Query {
-        posts(input: PostInput): [Post]
+        posts(pagination: PaginationInput): [Post]
     }
 """)
