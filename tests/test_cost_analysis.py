@@ -23,6 +23,7 @@ def describe_cost_analysis():
             query {
                 post(id: "XXXXXXXXXXXXXX") {
                     postId
+                    title
                 }
             }
         """
