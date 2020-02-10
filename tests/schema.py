@@ -40,33 +40,29 @@ schema = GraphQLSchema(
 post_schema = build_schema_with_cost("""
     type Author @cost(complexity: 4) {
         uid: String!
-        name: String @cost(complexity: 1)
-        email: String
+        name: String @cost(complexity: 2)
+        email: String @cost(complexity: 2)
     }
     
     interface TimestampedType {
-        createdAt: String
-        updatedAt: String
+        createdAt: String @cost(complexity: 2)
+        updatedAt: String @cost(complexity: 2)
     }
     
-    type Post implements TimestampedType {
+    type Post implements TimestampedType @cost(complexity: 8) {
         author: Author
-        postId: String! @cost(complexity: 5)
+        postId: String! @cost(complexity: 4)
         title: String @cost(complexity: 2)
         text: String @cost(complexity: 1)
-        publishedAt: String 
-        isPublic: Boolean
-        createdAt: String
-        updatedAt: String
-    }
-    
-    input PaginationInput {
-        first: Int
-        last: Int
+        publishedAt: String @cost(complexity: 1)
+        isPublic: Boolean  # NO cost
+        createdAt: String @cost(complexity: 4) # OVERRIDE cost 
+        updatedAt: String # INHERIT cost
     }
     
     type Query {
-        posts(pagination: PaginationInput): [Post]  @cost(complexity: 2, multipliers: ["pagination.limit"])
+        posts(first: Int): [Post]  @cost(multipliers: ["first"])
+        postsWithOverride(first: Int): [Post]  @cost(complexity: 2, multipliers: ["first"]) # OVERRIDE complexity of Post type
         post(id: ID!): Post
     }
 """)
