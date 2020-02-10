@@ -1,10 +1,7 @@
-from typing import List
 from unittest.mock import Mock
 
-from graphql import graphql_sync, TypeInfo, GraphQLError, visit, ValidationContext, parse
+from graphql import graphql_sync, TypeInfo, visit, ValidationContext, parse
 
-from graphql_utilities import ExtendedExecutionContext
-from graphql_utilities.validate import ValidationAbortedError
 from graphql_utilities.visitor import CostAnalysisVisitor
 from tests.helpers import assert_no_errors, assert_has_data
 from tests.resolver import PostRootResolver
@@ -38,7 +35,7 @@ def describe_cost_analysis():
         """
 
     def test_schema_get_posts():
-        result = graphql_sync(post_schema, get_posts_query(5), resolver)
+        result = graphql_sync(post_schema, get_posts_query(5))
         posts = result.data.get("posts")
         assert_no_errors(result)
         assert len(posts) == 5
@@ -110,10 +107,43 @@ def describe_cost_analysis():
         assert complexity == 20
 
     def test_inline_fragment():
-        pass
+        document = parse("""
+            query {
+                postsOrAnnouncements(first: 5) {
+                    createdAt
+                    updatedAt
+                    ... on Post {
+                        postId
+                    }
+                    ... on Announcement {
+                        announcementId
+                    }
+                }
+            }
+        """)
+
+        complexity = calculate_cost(ast_document=document)
+        assert complexity == 40
 
     def test_fragment_spread():
-        pass
+        document = parse("""
+                    query {
+                        postsOrAnnouncements(first: 5) {
+                            createdAt
+                            updatedAt
+                            ... postIdField
+                            ... announcementIdField
+                        }
+                    }
+                    
+                    fragment announcementIdField on Announcement {
+                        announcementId
+                    }
+                    
+                    fragment postIdField on Post {
+                        postId
+                    }
+                """)
 
-    def test_union():
-        pass
+        complexity = calculate_cost(ast_document=document)
+        assert complexity == 40

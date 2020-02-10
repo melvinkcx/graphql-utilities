@@ -10,3 +10,4 @@ class PostRootResolver:
 
     def post(self, *args, **kwargs):
         return list(get_posts(1))[0]
+

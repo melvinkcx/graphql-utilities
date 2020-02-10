@@ -44,7 +44,7 @@ class CostAnalysisVisitor(Visitor):
         if not cost_compute_fn:
             return BREAK
 
-        self.complexity += cost_compute_fn(node=node)
+        self.total_complexity += cost_compute_fn(node=node)
 
         return IDLE
 
