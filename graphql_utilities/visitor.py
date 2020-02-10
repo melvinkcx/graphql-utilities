@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Tuple, List, Union
 
 from graphql import Visitor, GraphQLError, BREAK, IDLE, ValidationContext, GraphQLInterfaceType, GraphQLObjectType, \
@@ -25,6 +26,7 @@ class CostAnalysisVisitor(Visitor):
     def __init__(self, context: ValidationContext, max_complexity):
         self.context = context
         self.max_complexity = max_complexity
+        self.operation_multipliers = 0
         self.total_complexity = 0  # Keep track of complexity so far
 
     def enter_operation_definition(self, node, key, parent, path, *args):
@@ -79,7 +81,10 @@ class CostAnalysisVisitor(Visitor):
         # TODO
         pass
 
-    def compute_node_cost(self, node, type_definition):
+    def compute_node_cost(self, node, type_definition, parent_multiplier=None):
+        if not parent_multiplier:
+            parent_multiplier = []
+
         if not node.selection_set:
             return 0
 
@@ -92,7 +97,9 @@ class CostAnalysisVisitor(Visitor):
         variables = {}  # TODO get variables from operation
         selections = node.selection_set.selections
         for selection in selections:
-            breakpoint()
+            self.operation_multipliers = [*parent_multiplier]
+            node_cost = 0
+
             if selection.kind == 'field':
                 # Calculate cost for FieldNode
                 field: GraphQLField = fields[selection.name.value]
@@ -109,12 +116,19 @@ class CostAnalysisVisitor(Visitor):
                     )
                     node_cost = self.compute_cost(directive_args)
 
+                child_cost = self.compute_node_cost(node=selection, type_definition=field_type,
+                                                    parent_multiplier=self.operation_multipliers) or 0
+                node_cost += child_cost
+                break
+
             elif selection.kind == 'fragment_spread':
                 pass
             elif selection.kind == 'inline_fragment':
                 pass
             else:
                 pass
+
+            total_cost += max(node_cost, 0)
 
         return total_cost
 
@@ -145,23 +159,20 @@ class CostAnalysisVisitor(Visitor):
     def compute_cost(self, directive_args: Tuple[int, List]) -> int:
         [complexity, multipliers] = directive_args
 
-        # TODO
-        """
-        if (useMultipliers) {
-          if (multipliers.length) {
-            const multiplier = multipliers.reduce(
-              (total, current) => total + current,
-              0
+        use_multipliers = len(multipliers) > 0
+        if use_multipliers:
+            multiplier = reduce(
+                lambda total, current: total + current,
+                multipliers,
+                0
             )
-            this.operationMultipliers = [...this.operationMultipliers, multiplier]
-          }
-          return this.operationMultipliers.reduce(
-            (acc, multiplier) => acc * multiplier,
-            complexity
-          )
-        }
+            self.operation_multipliers = [*self.operation_multipliers, multiplier]
+            return reduce(
+                lambda acc, mltp: acc * mltp,
+                self.operation_multipliers,
+                complexity
+            )
         return complexity
-        """
 
     def get_multipliers_from_list_node(self, list_nodes, field_args):
         multipliers = list(map(lambda node: node.value, filter(lambda node: node.kind == "string", list_nodes)))
