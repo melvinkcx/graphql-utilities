@@ -31,7 +31,7 @@ cost_directive_source_doc = """
     directive @cost(
         complexity: Int
         multipliers: [String]
-    ) on FIELD_DEFINITION | OBJECT 
+    ) on FIELD_DEFINITION | OBJECT
 """
 
 schema_with_cost_directive = build_schema(source=cost_directive_source_doc, no_location=True)

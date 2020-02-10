@@ -3,7 +3,7 @@ from typing import Tuple, List, Union
 
 from graphql import Visitor, GraphQLError, BREAK, IDLE, ValidationContext, GraphQLInterfaceType, GraphQLObjectType, \
     GraphQLField, get_named_type
-from graphql.execution.values import get_argument_values
+from graphql.execution.values import get_argument_values, get_directive_values
 from graphql.language import ast
 
 
@@ -26,7 +26,7 @@ class CostAnalysisVisitor(Visitor):
     def __init__(self, context: ValidationContext, max_complexity):
         self.context = context
         self.max_complexity = max_complexity
-        self.operation_multipliers = 0
+        self.operation_multipliers = []
         self.total_complexity = 0  # Keep track of complexity so far
 
     def enter_operation_definition(self, node, key, parent, path, *args):
@@ -109,24 +109,37 @@ class CostAnalysisVisitor(Visitor):
                 field_type = get_named_type(field.type)
                 field_args = get_argument_values(field, selection, variables)
 
-                if field.ast_node and field.ast_node.directives:
+                cost_is_computed = False
+                if field.ast_node and \
+                        field.ast_node.directives:
                     directive_args: Union[Tuple[int, List], None] = self.get_args_from_directives(
                         directives=field.ast_node.directives,
                         field_args=field_args
                     )
                     node_cost = self.compute_cost(directive_args)
 
+                    if directive_args:
+                        cost_is_computed = True
+
+                if field_type and \
+                        field_type.ast_node and \
+                        field_type.ast_node.directives and \
+                        isinstance(field_type, GraphQLObjectType) and \
+                        not cost_is_computed:
+                    directive_args = self.get_args_from_directives(directives=field_type.ast_node.directives,
+                                                                   field_args=field_args)
+                    node_cost = self.compute_cost(directive_args)
+
                 child_cost = self.compute_node_cost(node=selection, type_definition=field_type,
                                                     parent_multiplier=self.operation_multipliers) or 0
                 node_cost += child_cost
-                break
 
             elif selection.kind == 'fragment_spread':
                 pass
             elif selection.kind == 'inline_fragment':
                 pass
             else:
-                pass
+                node_cost = self.compute_node_cost(node=selection, type_definition=type_definition)
 
             total_cost += max(node_cost, 0)
 
@@ -145,7 +158,7 @@ class CostAnalysisVisitor(Visitor):
                 complexity_arg = complexity_args[0]
 
             multipliers_arg = None
-            multipliers_args = list(filter(lambda a: a.name.value == 'multiplier', cost_directive.arguments))
+            multipliers_args = list(filter(lambda a: a.name.value == 'multipliers', cost_directive.arguments))
             if len(multipliers_args) > 0:
                 multipliers_arg = multipliers_args[0]
 

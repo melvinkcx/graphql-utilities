@@ -53,9 +53,34 @@ def describe_cost_analysis():
         visit(ast_document, visitor)
         return visitor.total_complexity
 
-    def test_simple_cost():
+    def test_simple_scalar_only_cost():
         document = parse("""
-            query getPostXXX {
+            query {
+                announcement(id: "AAAAA") {
+                    announcementId
+                }
+            }
+        """)
+        complexity = calculate_cost(ast_document=document)
+        assert complexity == 4
+
+    @pytest.mark.skip(reason="BUG: @directive is not inherited from interface")
+    def test_simple_inherited_scalar_cost():
+        # FIXME See issue: https://github.com/graphql-python/graphql-core-next/issues/78
+        document = parse("""
+                    query {
+                        announcement(id: "AAAAA") {
+                            createdAt
+                            announcementId
+                        }
+                    }
+                """)
+        complexity = calculate_cost(ast_document=document)
+        assert complexity == 6
+
+    def test_simple_cost_with_object_type():
+        document = parse("""
+            query {
                 post(id: "XXXXXXXXXXXXXX") {
                     postId
                     title
@@ -68,10 +93,11 @@ def describe_cost_analysis():
         complexity = calculate_cost(ast_document=document)
         assert complexity == 20
 
-    @pytest.mark.skip()
+    @pytest.mark.skip(reason="BUG: @directive is not inherited from interface")
     def test_overriden_and_inherited_cost():
+        # FIXME See issue: https://github.com/graphql-python/graphql-core-next/issues/78
         document = parse("""
-            query getPostXXX {
+            query {
                 post(id: "XXXXXXXXXXXXXX") {
                     postId
                     createdAt
@@ -82,7 +108,6 @@ def describe_cost_analysis():
         complexity = calculate_cost(ast_document=document)
         assert complexity == 18
 
-    @pytest.mark.skip()
     def test_multiplier():
         document = parse("""
             query {
