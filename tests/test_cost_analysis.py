@@ -119,11 +119,10 @@ def describe_cost_analysis():
         complexity = _calculate_cost(ast_document=document)
         assert complexity == 50
 
-    @pytest.mark.skip()
     def test_multiplier_with_complexity_overridden():
         document = parse("""
                     query {
-                        posts(first: 5) {
+                        postsWithOverride(first: 5) {
                             title
                             isPublic
                         }
