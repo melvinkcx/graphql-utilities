@@ -64,9 +64,8 @@ def describe_cost_analysis():
         complexity = calculate_cost(ast_document=document)
         assert complexity == 4
 
-    @pytest.mark.skip(reason="BUG: @directive is not inherited from interface")
-    def test_simple_inherited_scalar_cost():
-        # FIXME See issue: https://github.com/graphql-python/graphql-core-next/issues/78
+    def test_simple_scalar_cost():
+        # Directives are not supposed to be inherited
         document = parse("""
                     query {
                         announcement(id: "AAAAA") {
@@ -76,7 +75,7 @@ def describe_cost_analysis():
                     }
                 """)
         complexity = calculate_cost(ast_document=document)
-        assert complexity == 6
+        assert complexity == 4
 
     def test_simple_cost_with_object_type():
         document = parse("""
@@ -93,9 +92,8 @@ def describe_cost_analysis():
         complexity = calculate_cost(ast_document=document)
         assert complexity == 20
 
-    @pytest.mark.skip(reason="BUG: @directive is not inherited from interface")
-    def test_overriden_and_inherited_cost():
-        # FIXME See issue: https://github.com/graphql-python/graphql-core-next/issues/78
+    def test_overriden_cost():
+        # Directives are not supposed to be inherited
         document = parse("""
             query {
                 post(id: "XXXXXXXXXXXXXX") {
@@ -106,7 +104,7 @@ def describe_cost_analysis():
             }
         """)
         complexity = calculate_cost(ast_document=document)
-        assert complexity == 18
+        assert complexity == 16
 
     def test_multiplier():
         document = parse("""

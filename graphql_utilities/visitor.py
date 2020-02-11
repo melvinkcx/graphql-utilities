@@ -6,6 +6,8 @@ from graphql import Visitor, GraphQLError, BREAK, IDLE, ValidationContext, Graph
 from graphql.execution.values import get_argument_values, get_directive_values
 from graphql.language import ast
 
+from graphql_utilities.helpers import deep_get
+
 
 class DepthAnalysisVisitor(Visitor):
     def __init__(self, context: ValidationContext, max_depth: int = 10):
@@ -145,7 +147,7 @@ class CostAnalysisVisitor(Visitor):
 
         return total_cost
 
-    def get_args_from_directives(self, directives, field_args) -> Union[None, Tuple[Union[int, None], List]]:
+    def get_args_from_directives(self, directives, field_args) -> Union[None, Tuple[Union[int, None], List, bool]]:
         cost_directive = None
         cost_directives = list(filter(lambda d: d.name.value == 'cost', directives))
         if len(cost_directives) > 0:
@@ -162,24 +164,30 @@ class CostAnalysisVisitor(Visitor):
             if len(multipliers_args) > 0:
                 multipliers_arg = multipliers_args[0]
 
-            complexity = int(
-                complexity_arg.value.value) if complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value" else None
-            multipliers = self.get_multipliers_from_list_node(multipliers_arg.value.values,
-                                                              field_args) if multipliers_arg and multipliers_arg.value and multipliers_arg.value.kind == "list" else []
+            has_complexity_defined = complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value"
+            complexity = int(complexity_arg.value.value) if has_complexity_defined else 0
 
-            return complexity, multipliers
+            has_multipliers_defined = multipliers_arg and multipliers_arg.value and multipliers_arg.value.kind == "list_value"
+            multipliers = self.get_multipliers_from_list_node(multipliers_arg.value.values, field_args) \
+                if has_multipliers_defined else []
+
+            override_complexity = not has_complexity_defined  # No complexity is set in @cost()
+
+            return complexity, multipliers, override_complexity
 
     def compute_cost(self, directive_args: Tuple[int, List]) -> int:
-        [complexity, multipliers] = directive_args
+        [complexity, multipliers, override_complext] = directive_args
 
-        use_multipliers = len(multipliers) > 0
+        use_multipliers = len(multipliers) > 0 or len(self.operation_multipliers) > 0
         if use_multipliers:
-            multiplier = reduce(
-                lambda total, current: total + current,
-                multipliers,
-                0
-            )
-            self.operation_multipliers = [*self.operation_multipliers, multiplier]
+            if len(multipliers) > 0:
+                multiplier = reduce(
+                    lambda total, current: total + current,
+                    multipliers,
+                    0
+                )
+                self.operation_multipliers = [*self.operation_multipliers, multiplier]
+
             return reduce(
                 lambda acc, mltp: acc * mltp,
                 self.operation_multipliers,
@@ -187,10 +195,17 @@ class CostAnalysisVisitor(Visitor):
             )
         return complexity
 
-    def get_multipliers_from_list_node(self, list_nodes, field_args):
-        multipliers = list(map(lambda node: node.value, filter(lambda node: node.kind == "string", list_nodes)))
+    def get_multipliers_from_list_node(self, list_nodes, field_args) -> List[int]:
+        multipliers = list(map(lambda node: node.value, filter(lambda node: node.kind == "string_value", list_nodes)))
         return self.get_multipliers_from_string(multipliers, field_args)
 
-    def get_multipliers_from_string(self, multipliers, field_args):
-        # TODO
-        pass
+    def get_multipliers_from_string(self, multipliers, field_args) -> List[int]:
+        def multiplier_selector(multiplier):
+            value = deep_get(dictionary=field_args, keys=multiplier)
+            if isinstance(value, list):
+                return len(value)
+            return int(value or 0)
+
+        mapped_values = map(multiplier_selector, multipliers)
+        filtered_values = filter(lambda multiplier: multiplier != 0, mapped_values)
+        return list(filtered_values)
