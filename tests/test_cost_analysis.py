@@ -46,7 +46,7 @@ def describe_cost_analysis():
         assert_no_errors(result)
         assert_has_data(result)
 
-    def calculate_cost(ast_document, max_complexity=100) -> int:
+    def _calculate_cost(ast_document, max_complexity=100) -> int:
         context = ValidationContext(schema=post_schema, ast=ast_document,
                                     type_info=TypeInfo(post_schema), on_error=on_error_stub)
         visitor = CostAnalysisVisitor(context=context, max_complexity=max_complexity)
@@ -61,7 +61,7 @@ def describe_cost_analysis():
                 }
             }
         """)
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 4
 
     def test_simple_scalar_cost():
@@ -74,7 +74,7 @@ def describe_cost_analysis():
                         }
                     }
                 """)
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 4
 
     def test_simple_cost_with_object_type():
@@ -89,10 +89,10 @@ def describe_cost_analysis():
                 }
             }
         """)
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 20
 
-    def test_overriden_cost():
+    def test_overridden_cost():
         # Directives are not supposed to be inherited
         document = parse("""
             query {
@@ -103,10 +103,10 @@ def describe_cost_analysis():
                 }
             }
         """)
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 16
 
-    def test_multiplier():
+    def test_multiplier_without_overriding_complexity():
         document = parse("""
             query {
                 posts(first: 5) {
@@ -116,11 +116,11 @@ def describe_cost_analysis():
             }
         """)
 
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 50
 
     @pytest.mark.skip()
-    def test_multiplier_with_complexity_overriden():
+    def test_multiplier_with_complexity_overridden():
         document = parse("""
                     query {
                         posts(first: 5) {
@@ -130,7 +130,7 @@ def describe_cost_analysis():
                     }
                 """)
 
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 20
 
     @pytest.mark.skip()
@@ -150,7 +150,7 @@ def describe_cost_analysis():
             }
         """)
 
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 40
 
     @pytest.mark.skip()
@@ -174,5 +174,5 @@ def describe_cost_analysis():
                     }
                 """)
 
-        complexity = calculate_cost(ast_document=document)
+        complexity = _calculate_cost(ast_document=document)
         assert complexity == 40

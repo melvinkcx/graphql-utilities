@@ -83,7 +83,7 @@ class CostAnalysisVisitor(Visitor):
         # TODO
         pass
 
-    def compute_node_cost(self, node, type_definition, parent_multiplier=None):
+    def compute_node_cost(self, node, type_definition, parent_multiplier=None, parent_complexity=None):
         if not parent_multiplier:
             parent_multiplier = []
 
@@ -111,29 +111,37 @@ class CostAnalysisVisitor(Visitor):
                 field_type = get_named_type(field.type)
                 field_args = get_argument_values(field, selection, variables)
 
+                use_field_type_complexity = False
                 cost_is_computed = False
-                if field.ast_node and \
-                        field.ast_node.directives:
-                    directive_args: Union[Tuple[int, List], None] = self.get_args_from_directives(
+                if field.ast_node and field.ast_node.directives:
+                    directive_args: Union[Tuple[int, List, bool], None] = self.get_args_from_directives(
                         directives=field.ast_node.directives,
                         field_args=field_args
                     )
+
+                    override_complexity = directive_args[-1]
+                    if not override_complexity:
+                        use_field_type_complexity = True
+                        parent_complexity, _, _ = self.get_args_from_directives(
+                            directives=field_type.ast_node.directives,
+                            field_args=field_args)
+
                     node_cost = self.compute_cost(directive_args)
 
                     if directive_args:
                         cost_is_computed = True
 
-                if field_type and \
-                        field_type.ast_node and \
+                if field_type and field_type.ast_node and \
                         field_type.ast_node.directives and \
                         isinstance(field_type, GraphQLObjectType) and \
-                        not cost_is_computed:
+                        (not cost_is_computed or use_field_type_complexity):
                     directive_args = self.get_args_from_directives(directives=field_type.ast_node.directives,
                                                                    field_args=field_args)
                     node_cost = self.compute_cost(directive_args)
 
                 child_cost = self.compute_node_cost(node=selection, type_definition=field_type,
-                                                    parent_multiplier=self.operation_multipliers) or 0
+                                                    parent_multiplier=self.operation_multipliers,
+                                                    parent_complexity=parent_complexity) or 0
                 node_cost += child_cost
 
             elif selection.kind == 'fragment_spread':
@@ -171,12 +179,12 @@ class CostAnalysisVisitor(Visitor):
             multipliers = self.get_multipliers_from_list_node(multipliers_arg.value.values, field_args) \
                 if has_multipliers_defined else []
 
-            override_complexity = not has_complexity_defined  # No complexity is set in @cost()
+            override_complexity = has_complexity_defined  # complexity is set in @cost(), override @cost() of Object
 
             return complexity, multipliers, override_complexity
 
-    def compute_cost(self, directive_args: Tuple[int, List]) -> int:
-        [complexity, multipliers, override_complext] = directive_args
+    def compute_cost(self, directive_args: Tuple[int, List, bool]) -> int:
+        [complexity, multipliers, override_complexity] = directive_args
 
         use_multipliers = len(multipliers) > 0 or len(self.operation_multipliers) > 0
         if use_multipliers:
