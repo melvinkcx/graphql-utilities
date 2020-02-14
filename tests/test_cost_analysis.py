@@ -1,49 +1,13 @@
 from unittest.mock import Mock
 
-from graphql import graphql_sync, TypeInfo, visit, ValidationContext, parse
+from graphql import TypeInfo, visit, ValidationContext, parse
 
 from graphql_utilities.visitor import CostAnalysisVisitor
-from tests.helpers import assert_no_errors, assert_has_data
-from tests.resolver import PostRootResolver
 from tests.schema import post_schema
 
 
 def describe_cost_analysis():
-    resolver = PostRootResolver()
     on_error_stub = Mock()
-
-    def get_posts_query(first=10):
-        return """
-            query {
-                posts(first: """ + str(first) + """) {
-                    postId
-                }
-            }
-        """
-
-    def get_single_post_query():
-        return """
-            query getPostXXX {
-                post(id: "XXXXXXXXXXXXXX") {
-                    postId
-                    title
-                    author {
-                        name
-                    }
-                }
-            }
-        """
-
-    def test_schema_get_posts():
-        result = graphql_sync(post_schema, get_posts_query(5), resolver)
-        posts = result.data.get("posts")
-        assert_no_errors(result)
-        assert len(posts) == 5
-
-    def test_schema_get_single_post():
-        result = graphql_sync(post_schema, get_single_post_query(), resolver)
-        assert_no_errors(result)
-        assert_has_data(result)
 
     def _calculate_cost(ast_document, max_complexity=100) -> int:
         context = ValidationContext(schema=post_schema, ast=ast_document,
