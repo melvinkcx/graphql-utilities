@@ -1,6 +1,5 @@
 from unittest.mock import Mock
 
-import pytest
 from graphql import graphql_sync, TypeInfo, visit, ValidationContext, parse
 
 from graphql_utilities.visitor import CostAnalysisVisitor
@@ -132,13 +131,10 @@ def describe_cost_analysis():
         complexity = _calculate_cost(ast_document=document)
         assert complexity == 20
 
-    @pytest.mark.skip()
     def test_inline_fragment():
         document = parse("""
             query {
                 postsOrAnnouncements(first: 5) {
-                    createdAt
-                    updatedAt
                     ... on Post {
                         postId
                     }
@@ -150,15 +146,12 @@ def describe_cost_analysis():
         """)
 
         complexity = _calculate_cost(ast_document=document)
-        assert complexity == 40
+        assert complexity == 20
 
-    @pytest.mark.skip()
     def test_fragment_spread():
         document = parse("""
                     query {
                         postsOrAnnouncements(first: 5) {
-                            createdAt
-                            updatedAt
                             ... postIdField
                             ... announcementIdField
                         }
@@ -170,6 +163,7 @@ def describe_cost_analysis():
                     
                     fragment postIdField on Post {
                         postId
+                        createdAt
                     }
                 """)
 

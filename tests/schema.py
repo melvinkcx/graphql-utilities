@@ -57,7 +57,7 @@ post_schema = build_schema_with_cost("""
         publishedAt: String @cost(complexity: 1)
         isPublic: Boolean  # NO cost
         createdAt: String @cost(complexity: 4) # OVERRIDE cost 
-        updatedAt: String # BUG: INHERIT cost (not working)
+        updatedAt: String
     }
     
     type Announcement implements TimestampedType {
@@ -73,7 +73,7 @@ post_schema = build_schema_with_cost("""
     type Query {
         posts(first: Int): [Post]  @cost(multipliers: ["first"])
         postsWithOverride(first: Int): [Post]  @cost(complexity: 2, multipliers: ["first"]) # OVERRIDE complexity of Post type
-        postsOrAnnouncements(first: Int): [PostOrAnnouncement]
+        postsOrAnnouncements(first: Int): [PostOrAnnouncement] @cost(multipliers: ["first"])
         post(id: ID!): Post
         announcement(id: ID!): Announcement
     }

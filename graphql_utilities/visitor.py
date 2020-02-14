@@ -76,12 +76,16 @@ class CostAnalysisVisitor(Visitor):
         )
 
     def compute_mutation_cost(self, node):
-        # TODO
-        pass
+        return self.compute_node_cost(
+            node=node,
+            type_definition=self.context.schema.mutation_type
+        )
 
     def compute_subscription_cost(self, node):
-        # TODO
-        pass
+        return self.compute_node_cost(
+            node=node,
+            type_definition=self.context.schema.subscription_type
+        )
 
     def compute_node_cost(self, node, type_definition, parent_multiplier=None, parent_complexity=None):
         if not parent_multiplier:
@@ -95,7 +99,7 @@ class CostAnalysisVisitor(Visitor):
             fields = type_definition.fields
 
         total_cost = 0
-        fragment_cost = []  # TODO ??
+        fragment_costs = []
         variables = {}  # TODO get variables from operation
         selections = node.selection_set.selections
         for selection in selections:
@@ -104,7 +108,7 @@ class CostAnalysisVisitor(Visitor):
 
             if selection.kind == 'field':
                 # Calculate cost for FieldNode
-                field: GraphQLField = fields[selection.name.value]
+                field: GraphQLField = fields.get(selection.name.value)
                 if not field:
                     break
 
@@ -120,7 +124,7 @@ class CostAnalysisVisitor(Visitor):
                     )
 
                     override_complexity = directive_args[-1]
-                    if not override_complexity:
+                    if not override_complexity and isinstance(field_type, GraphQLObjectType):
                         use_field_type_complexity = True
                         parent_complexity, _, _ = self.get_args_from_directives(
                             directives=field_type.ast_node.directives,
@@ -145,13 +149,32 @@ class CostAnalysisVisitor(Visitor):
                 node_cost += child_cost
 
             elif selection.kind == 'fragment_spread':
-                pass
+                fragment = self.context.get_fragment(selection.name.value)
+                fragment_type = fragment and self.context.schema.get_type(fragment.type_condition.name.value)
+                fragment_node_cost = self.compute_node_cost(fragment, fragment_type, self.operation_multipliers) \
+                    if fragment \
+                    else 0
+                fragment_costs.append(fragment_node_cost)
+                node_cost = 0
+
             elif selection.kind == 'inline_fragment':
-                pass
+                inline_fragment_type = self.context.schema.get_type(selection.type_condition.name.value) \
+                    if selection.type_condition and selection.type_condition.name \
+                    else type_definition
+                fragment_node_cost = self.compute_node_cost(selection, inline_fragment_type, self.operation_multipliers) \
+                    if selection \
+                    else 0
+
+                fragment_costs.append(fragment_node_cost)
+                node_cost = 0
+
             else:
                 node_cost = self.compute_node_cost(node=selection, type_definition=type_definition)
 
             total_cost += max(node_cost, 0)
+
+        if fragment_costs:
+            return total_cost + max(fragment_costs)
 
         return total_cost
 
@@ -172,7 +195,7 @@ class CostAnalysisVisitor(Visitor):
             if len(multipliers_args) > 0:
                 multipliers_arg = multipliers_args[0]
 
-            has_complexity_defined = complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value"
+            has_complexity_defined = bool(complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value")
             complexity = int(complexity_arg.value.value) if has_complexity_defined else 0
 
             has_multipliers_defined = multipliers_arg and multipliers_arg.value and multipliers_arg.value.kind == "list_value"
