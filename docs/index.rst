@@ -7,11 +7,12 @@ Welcome to graphql-utilities's documentation!
 =============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Table of Contents:
 
    introduction
    query_cost_analysis
+   query_cost_analysis_advanced_usage
    depth_limiting
    oneshot_middleware
 

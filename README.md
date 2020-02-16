@@ -4,7 +4,7 @@
 
 **graphql-utilities** tries to secure your GraphQL API from malicious queries and provides utilities to make using `graphql-core` easier.
 
-1. It comes with a custom configurable `ExecutionContext` class that is capable of performing:
+1. It comes with a custom configurable `ExtendedExecutionContext` class that is capable of performing:
 
    * **query cost analysis**: define the cost of your queries using the `@cost()` directive provided, `graphql-utilities` provides helper functions and custom execution context to protect you from overly complex queries.
    * **depth limiting**: limit the maximum depth of queries, it's especially useful with object types with recursive relationship
