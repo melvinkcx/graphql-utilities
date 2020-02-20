@@ -57,6 +57,9 @@ graphql_sync(schema=schema, source=query,
         )
 ```
 
+### Query Cost Analysis
+
+
 ## Motivation
 
 In recent projects, I ran into some problems with `graphene` and `graphql-core` including missing operation-level middleware (See [issue here](https://github.com/graphql-python/graphene/issues/1117)), etc. 

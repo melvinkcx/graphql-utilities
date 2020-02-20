@@ -5,6 +5,9 @@ Using Query Cost Analysis
 
 The most exciting part of this library is query cost analysis. It calculates the complexity of queries received and halt execution if the complexity exceeds the permitted value.
 
+Cost analysis works with simple queries, queries with fragments, and mutations.
+
+.. seealso:: For more comprehensive usage, check out :ref:`query_cost_analysis_advanced_usage`.
 
 Step 1: Build Schema with Cost Directive
 ----------------------------------------
