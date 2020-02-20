@@ -98,6 +98,7 @@ def describe_run_only_once():
 
     def test_multiple_one_shot_middleware():
         runs = []
+
         class OneShotMiddleware:
             @run_only_once
             def resolve(self, next_, *args, **kwargs):
