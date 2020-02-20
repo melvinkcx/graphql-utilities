@@ -96,6 +96,28 @@ def describe_run_only_once():
                  context_value=_get_fake_wsgi_request_obj()) for _ in (0, 1)]
         assert len(runs) == 2, "middleware should run twice for 2 requests"
 
+    def test_multiple_one_shot_middleware():
+        runs = []
+
+        class OneShotMiddleware:
+            @run_only_once
+            def resolve(self, next_, *args, **kwargs):
+                runs.append("OneShotMiddleware")
+                return next_(*args, **kwargs)
+
+        class AnotherOneShotMiddleware:
+            @run_only_once
+            def resolve(self, next_, *args, **kwargs):
+                runs.append("AnotherOneShotMiddleware")
+                return next_(*args, **kwargs)
+
+        middleware = (OneShotMiddleware(), AnotherOneShotMiddleware())
+        execute(schema=schema, document=parse(query), middleware=middleware,
+                context_value={})
+        assert len(runs) == 2, "both middleware should have run"
+        assert "OneShotMiddleware" in runs
+        assert "AnotherOneShotMiddleware" in runs
+
     def _get_fake_wsgi_request_obj():
         return WSGIRequest({
             'REQUEST_METHOD': 'POST',
