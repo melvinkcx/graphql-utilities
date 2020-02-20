@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 
-from graphql import graphql_sync
+from graphql import execute, parse
 
 from graphql_utilities.decorators import run_only_once
 from tests.helpers import assert_no_errors
@@ -23,12 +23,8 @@ def describe_run_only_once():
         runs = []
         middleware = (OneShotMiddleware(),)
 
-<<<<<<< HEAD
-        result = graphql_sync(schema=schema, source=query, middleware=[Middleware()])
-=======
         result = execute(schema=schema, document=parse(query),
                          middleware=middleware, context_value={})
->>>>>>> b30b30ba8fc1b39103985231a949bd4d1d44cc4c
         assert_no_errors(result)
         assert len(runs) == 1, "middleware should run only once"
 
@@ -67,13 +63,6 @@ def describe_run_only_once():
         [execute(schema=schema, document=parse(query), middleware=middleware, context_value={}) for _ in (0, 1)]
         assert len(runs) == 2, "middleware should run twice for 2 requests"
 
-<<<<<<< HEAD
-        result = graphql_sync(schema=schema, source=query, middleware=[FieldMiddleware(), OneShotMiddleware()])
-        assert_no_errors(result)
-        assert len(runs) == 5
-        assert runs.count("OneShotMiddleware") == 1
-        assert runs.count("FieldMiddleware") == 4
-=======
     def test_middleware_with_graphene_context_values():
         runs = []
 
@@ -134,4 +123,3 @@ def describe_run_only_once():
             'REQUEST_METHOD': 'POST',
             'PATH_INFO': '/graphql',
             'wsgi.input': ""})
->>>>>>> b30b30ba8fc1b39103985231a949bd4d1d44cc4c

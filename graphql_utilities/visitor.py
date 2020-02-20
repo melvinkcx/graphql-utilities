@@ -42,7 +42,8 @@ class CostAnalysisVisitor(Visitor):
         5. get_arguments_from_directive
         6. ...
 
-        Ref: https://github.com/pa-bru/graphql-cost-analysis/blob/b0f41119955654b52f8943ceaf4eb35dfb68db4e/src/costAnalysis.js#L95
+        Ref:
+        https://github.com/pa-bru/graphql-cost-analysis/blob/b0f41119955654b52f8943ceaf4eb35dfb68db4e/src/costAnalysis.js#L95
         """
         cost_compute_fn = self.get_cost_compute_fn(operation_type=node.operation.name)
         if not cost_compute_fn:
@@ -54,7 +55,8 @@ class CostAnalysisVisitor(Visitor):
 
     def exit_operation_definition(self):
         """
-        Ref: https://github.com/pa-bru/graphql-cost-analysis/blob/b0f41119955654b52f8943ceaf4eb35dfb68db4e/src/costAnalysis.js#L124
+        Ref:
+        https://github.com/pa-bru/graphql-cost-analysis/blob/b0f41119955654b52f8943ceaf4eb35dfb68db4e/src/costAnalysis.js#L124
         """
         if self.total_complexity > self.max_complexity:
             return self.context.report_error(
@@ -195,7 +197,8 @@ class CostAnalysisVisitor(Visitor):
             if len(multipliers_args) > 0:
                 multipliers_arg = multipliers_args[0]
 
-            has_complexity_defined = bool(complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value")
+            has_complexity_defined = bool(
+                complexity_arg and complexity_arg.value and complexity_arg.value.kind == "int_value")
             complexity = int(complexity_arg.value.value) if has_complexity_defined else 0
 
             has_multipliers_defined = multipliers_arg and multipliers_arg.value and multipliers_arg.value.kind == "list_value"

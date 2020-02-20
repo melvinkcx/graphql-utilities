@@ -120,11 +120,11 @@ def describe_cost_analysis():
                             ... announcementIdField
                         }
                     }
-                    
+
                     fragment announcementIdField on Announcement {
                         announcementId
                     }
-                    
+
                     fragment postIdField on Post {
                         postId
                         createdAt
