@@ -59,6 +59,7 @@ graphql_sync(schema=schema, source=query,
 
 ### Query Cost Analysis
 
+See the documentation at [https://graphql-utilities.readthedocs.io/en/latest/](https://graphql-utilities.readthedocs.io/en/latest/)
 
 ## Motivation
 
