@@ -52,3 +52,5 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 html_sidebars = {"**": ['globaltoc.html', 'relations.html', 'searchbox.html']}
+
+master_doc = 'index'
