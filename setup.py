@@ -47,6 +47,8 @@ setuptools.setup(
             'flake8>=3.7.9,<4',
             'pytest-describe>=0.12,<1',
             'django>=1.11,<3',
+            'sphinx>=2.4.1,<3',
+            'sphinx_rtd_theme>=0.4.3,<1',
         ]
     }
 )
