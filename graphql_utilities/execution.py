@@ -1,8 +1,9 @@
 from typing import Any, Dict, Union, List, Optional
 
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
-    GraphQLFieldResolver, GraphQLTypeResolver, Middleware, ValidationContext, TypeInfo, visit
+    GraphQLFieldResolver, GraphQLTypeResolver, Middleware
 
+from graphql_utilities.exceptions import ValidationAbortedError
 from graphql_utilities.validate import validate_depth, validate_cost
 
 ContextValue = Optional[Dict[str, Any]]
@@ -28,11 +29,11 @@ class ExtendedExecutionContext(ExecutionContext):
         errors: List[GraphQLError] = []
 
         if context_value and isinstance(context_value, dict):
-            validate_depth(schema=schema, document=document, context_value=context_value, errors=errors)
-            validate_cost(schema=schema, document=document, context_value=context_value, errors=errors)
-
-        if errors:
-            return errors
+            try:
+                validate_depth(schema=schema, document=document, context_value=context_value, errors=errors)
+                validate_cost(schema=schema, document=document, context_value=context_value, errors=errors)
+            except ValidationAbortedError:
+                return errors
 
         return super(ExtendedExecutionContext, cls).build(
             schema,

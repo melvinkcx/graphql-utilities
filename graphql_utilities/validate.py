@@ -2,15 +2,8 @@ from typing import List, Any
 
 from graphql import GraphQLError, GraphQLSchema, DocumentNode, ValidationContext, visit, TypeInfo
 
+from graphql_utilities.exceptions import ValidationAbortedError
 from graphql_utilities.visitor import DepthAnalysisVisitor, CostAnalysisVisitor
-
-
-class ValidationAbortedError(RuntimeError):
-    """
-    Taken from: graphql-core-next/graphql.validation.validate
-    Error when a validation has been aborted (error limit reached).
-    """
-    pass
 
 
 def validate_depth(
@@ -29,10 +22,7 @@ def validate_depth(
         max_depth = depth_analysis.get("max_depth", 10)
         context = ValidationContext(schema=schema, ast=document, type_info=TypeInfo(schema), on_error=on_error)
 
-        try:
-            visit(document, DepthAnalysisVisitor(context=context, max_depth=max_depth))
-        except ValidationAbortedError:
-            pass
+        visit(document, DepthAnalysisVisitor(context=context, max_depth=max_depth))
 
 
 def validate_cost(
@@ -51,9 +41,6 @@ def validate_cost(
         max_complexity = cost_analysis.get("max_complexity", 500)
         context = ValidationContext(schema=schema, ast=document, type_info=TypeInfo(schema), on_error=on_error)
 
-        try:
-            visit(document, CostAnalysisVisitor(context=context, max_complexity=max_complexity))
-        except ValidationAbortedError:
-            pass
+        visit(document, CostAnalysisVisitor(context=context, max_complexity=max_complexity))
 
     return []
