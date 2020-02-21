@@ -10,7 +10,7 @@ def assert_no_data(result: ExecutionResult) -> None:
 
 
 def assert_has_data(result: ExecutionResult) -> None:
-    assert not result.data, "Results should contain data"
+    assert result.data, "Results should contain data"
 
 
 def assert_has_errors(result: ExecutionResult) -> None:

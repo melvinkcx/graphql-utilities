@@ -1,19 +1,12 @@
 from typing import Any, Dict, Union, List, Optional
 
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
-    GraphQLFieldResolver, GraphQLTypeResolver, Middleware, ValidationContext, TypeInfo, visit
+    GraphQLFieldResolver, GraphQLTypeResolver, Middleware
 
-from graphql_utilities.visitor import DepthAnalysisVisitor
+from graphql_utilities.exceptions import ValidationAbortedError
+from graphql_utilities.validate import validate_depth, validate_cost
 
 ContextValue = Optional[Dict[str, Any]]
-
-
-class ValidationAbortedError(RuntimeError):
-    """
-    Taken from: graphql-core-next/graphql.validation.validate
-    Error when a validation has been aborted (error limit reached).
-    """
-    pass
 
 
 class ExtendedExecutionContext(ExecutionContext):
@@ -30,25 +23,17 @@ class ExtendedExecutionContext(ExecutionContext):
             type_resolver: GraphQLTypeResolver = None,
             middleware: Middleware = None,
     ) -> Union[List[GraphQLError], ExecutionContext]:
-        # Build execution context after visiting it
+        # As suggested, graphql_sync, graphql_impl, or graphql should be invoked to execute queries.
+        # By invoking them, schema and documents will have already been validated before the execution
+        # context is being created
         errors: List[GraphQLError] = []
 
-        def on_error(error: GraphQLError) -> None:
-            errors.append(error)
-            raise ValidationAbortedError
-
-        depth_analysis = context_value.get("depth_analysis")
-        if depth_analysis:
-            max_depth = depth_analysis.get("max_depth", 10)
-            context = ValidationContext(schema=schema, ast=document, type_info=TypeInfo(schema), on_error=on_error)
-
+        if context_value and isinstance(context_value, dict):
             try:
-                visit(document, DepthAnalysisVisitor(context=context, max_depth=max_depth))
+                validate_depth(schema=schema, document=document, context_value=context_value, errors=errors)
+                validate_cost(schema=schema, document=document, context_value=context_value, errors=errors)
             except ValidationAbortedError:
-                pass
-
-        if errors:
-            return errors
+                return errors
 
         return super(ExtendedExecutionContext, cls).build(
             schema,
