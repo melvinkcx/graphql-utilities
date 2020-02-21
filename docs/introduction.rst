@@ -19,13 +19,13 @@ Getting Started
 
 You can install graphql-utilities using `pip <https://pip.pypa.io/>`_:
 
-.. code-block::
+.. code-block:: shell
 
     pip install graphql-utilities
 
 Alternatively, if you are using `pipenv <https://pipenv.kennethreitz.org/en/latest/>`_:
 
-.. code-block::
+.. code-block:: shell
 
     pipenv install graphql-utilities
 

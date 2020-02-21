@@ -11,6 +11,7 @@ All you need to do are:
 2. Pass the following `context_value`:
 
     .. code-block:: python
+
         {"depth_analysis": {
            "max_depth": 5   # Maximum depth allowed
         }}
