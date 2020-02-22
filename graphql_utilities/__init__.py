@@ -3,7 +3,7 @@ from .directives import GraphQLCostDirective, schema_with_cost_directive, cost_d
 from .execution import ExtendedExecutionContext
 from .utilities import build_schema_with_cost
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "run_only_once",
