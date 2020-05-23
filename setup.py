@@ -34,12 +34,12 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries'
     ],
-    install_requires=['graphql-core>=3.0'],
+    install_requires=['graphql-core>=3.1'], # Note: Have to upgrade this as graphene>=3.0a1 requires graphql-core>=3.1
     python_requires=">=3.6,<4",
     extras_require={
         'dev': [
@@ -49,6 +49,7 @@ setuptools.setup(
             'django>=1.11,<3',
             'sphinx>=2.4.1,<3',
             'sphinx_rtd_theme>=0.4.3,<1',
+            'graphene>=3.0b2,<4',
         ]
     }
 )
