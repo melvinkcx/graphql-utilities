@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, List, Optional
+from typing import Any, Dict, Union, List, Optional, Callable
 
 from graphql import GraphQLError, ExecutionContext, GraphQLSchema, DocumentNode, \
     GraphQLFieldResolver, GraphQLTypeResolver, Middleware
@@ -17,11 +17,12 @@ class ExtendedExecutionContext(ExecutionContext):
             document: DocumentNode,
             root_value: Any = None,
             context_value: Any = None,
-            raw_variable_values: Dict[str, Any] = None,
-            operation_name: str = None,
-            field_resolver: GraphQLFieldResolver = None,
-            type_resolver: GraphQLTypeResolver = None,
-            middleware: Middleware = None,
+            raw_variable_values: Optional[Dict[str, Any]] = None,
+            operation_name: Optional[str] = None,
+            field_resolver: Optional[GraphQLFieldResolver] = None,
+            type_resolver: Optional[GraphQLTypeResolver] = None,
+            middleware: Optional[Middleware] = None,
+            is_awaitable: Optional[Callable[[Any], bool]] = None,
     ) -> Union[List[GraphQLError], ExecutionContext]:
         # As suggested, graphql_sync, graphql_impl, or graphql should be invoked to execute queries.
         # By invoking them, schema and documents will have already been validated before the execution

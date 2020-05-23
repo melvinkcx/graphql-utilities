@@ -39,7 +39,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries'
     ],
-    install_requires=['graphql-core>=3.1'], # Note: Have to upgrade this as graphene>=3.0a1 requires graphql-core>=3.1
+    install_requires=['graphql-core>=3.1'],  # Note: Have to upgrade this as graphene>=3.0a1 requires graphql-core>=3.1
     python_requires=">=3.6,<4",
     extras_require={
         'dev': [
